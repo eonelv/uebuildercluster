@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	. "user"
 )
 
 const dbName string = "data.db"
@@ -91,7 +92,7 @@ func processTCP() {
 	listener, err := net.ListenTCP("tcp", tcpAddr)
 	checkError(err)
 
-	LogInfo("监听端口：", service)
+	//LogDebug("监听端口：", service)
 	for {
 		conn, err := listener.AcceptTCP()
 		if err != nil {
@@ -112,7 +113,7 @@ func processConnect(conn *net.TCPConn) {
 	//re := regexp.MustCompile(`(\d+\.\d+\.\d+\.\d+)|(\d+)`)
 	//ips := re.FindStringSubmatch(objID)
 	CopyArray(reflect.ValueOf(&client.AccountID), []byte(objID))
-	LogInfo("Client ID:", objID)
+	//LogDebug("Client ID:", objID)
 	client.Conn = conn
 	client.Sender = CreateTCPSender(conn)
 

@@ -6,11 +6,13 @@ import (
 	. "idmgr"
 	"mydb"
 	"reflect"
+	"strings"
 	"time"
 )
 
 type MsgServerRegister struct {
-	Account     NAME_STRING "MAC地址"
+	Host        NAME_STRING "IP地址"
+	Account     NAME_STRING "服务器所在的目录名字"
 	UserID      ObjectID    "MsgConnection返回的ID"
 	SVN         [1024]byte  "SVN地址"
 	Member      [1024]byte  "通知的用户列表"
@@ -43,7 +45,8 @@ func (this *MsgServerRegister) CreateByBytes(bytes []byte) (bool, int) {
 func (this *MsgServerRegister) Process(p interface{}) {
 	retChan := p.(chan ObjectID)
 
-	rowsNum, err := mydb.DBMgr.PreQuery("select id from t_project where host = ?", Byte2String(this.Account[:]))
+	rowsNum, err := mydb.DBMgr.PreQuery("select id from t_project where host = ? and account = ?",
+		Byte2String(this.Host[:]), Byte2String(this.Account[:]))
 	if err != nil {
 		LogError(err)
 		this.UserID = 1
@@ -83,9 +86,14 @@ func (this *MsgServerRegister) Process(p interface{}) {
 		this.UserID = 3
 		return
 	}
-	rowsResult, err1 := mydb.DBMgr.PreExecute("insert into t_project (id, name, projectName, host, svn, member, serverState) values (?,?,?,?,?,?,?)",
-		id, Byte2String(this.ProjectName[:]), Byte2String(this.ProjectName[:]), Byte2String(this.Account[:]),
-		Byte2String(this.SVN[:]), Byte2String(this.Member[:]), 0)
+	sql := "insert into t_project (id, name, projectName, host, account, svn, member, serverState) values (?,?,?,?,?,?,?,?)"
+
+	members := Byte2String(this.Member[:])
+	members = strings.ReplaceAll(members, `,`, "-")
+	rowsResult, err1 := mydb.DBMgr.PreExecute(sql,
+		id, Byte2String(this.ProjectName[:]), Byte2String(this.ProjectName[:]),
+		Byte2String(this.Host[:]), Byte2String(this.Account[:]),
+		Byte2String(this.SVN[:]), members, 0)
 	if err1 != nil {
 		LogError(err1)
 		this.UserID = 2
@@ -100,6 +108,6 @@ func (this *MsgServerRegister) Process(p interface{}) {
 	select {
 	case retChan <- id:
 	case <-time.After(20 * time.Second):
-		LogError("MsgUserRegister send error")
+		LogError("MsgServerRegister send error")
 	}
 }

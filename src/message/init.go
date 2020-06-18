@@ -10,4 +10,5 @@ func init() {
 	registerNetMsgConnection()
 	registerNetMsgRegisterServer()
 	registerNetMsgBindServer()
+	registerNetMsgProject()
 }

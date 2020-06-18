@@ -45,6 +45,8 @@ func ProcessRecv(handler TCPHandler, isInner bool) {
 	defer handler.close()
 
 	for {
+		//conn.SetReadDeadline(time.Now().Add(1 * 60 * time.Second))
+
 		headerBytes := make([]byte, HEADER_LENGTH)
 		_, err := io.ReadFull(conn, headerBytes)
 		if err != nil {
@@ -55,7 +57,7 @@ func ProcessRecv(handler TCPHandler, isInner bool) {
 		header := &PackHeader{}
 		Byte2Struct(reflect.ValueOf(header), headerBytes)
 
-		LogDebug("Header", header.Cmd, header.Length, header.Tag, header.Version)
+		//LogDebug("Header", header.Cmd, header.Length, header.Tag, header.Version)
 		bodyBytes := make([]byte, header.Length-HEADER_LENGTH)
 		_, err = io.ReadFull(conn, bodyBytes)
 		if err != nil {
@@ -97,12 +99,12 @@ func (client *TCPUserConn) processLogin(header *PackHeader, datas []byte) {
 		msgConnection := &MsgConnection{}
 		msgConnection.CreateByBytes(datas)
 		client.Sender.Send(msgConnection)
-		LogDebug("MsgConnect成功...")
+		//LogDebug("MsgConnect成功...")
 		return
 	}
 	if header.Cmd == CMD_REGISTER_SERVER {
 		msgUserRegister := &MsgServerRegister{}
-		LogDebug("Server 注册...")
+		//LogDebug("Server 注册...")
 		msgUserRegister.CreateByBytes(datas)
 
 		chanRet := make(chan ObjectID)
@@ -117,9 +119,11 @@ func (client *TCPUserConn) processLogin(header *PackHeader, datas []byte) {
 			client.Sender.Send(msgUserRegister)
 		}
 	} else if header.Cmd == CMD_LOGIN {
-		LogDebug("MsgLogin成功...")
+		//LogDebug("MsgLogin成功...")
 		client.ID = SysIDGenerator.GetNextID(ID_CLIENT)
 		//分配一个ID
+	} else {
+		return
 	}
 	client._isLogin = true
 	targetChan := GetChanByID(SYSTEM_USER_CHAN_ID)
@@ -153,7 +157,7 @@ func (client *TCPUserConn) waitLoginReturn() bool {
 // 将消息路由到玩家处理
 func (client *TCPUserConn) routMsgToUser(header *PackHeader, data []byte) bool {
 	msg := &Command{header.Cmd, data, nil, nil}
-	LogInfo("routMsgToUser: ", Byte2String(client.AccountID[:]), client.ID)
+	//LogDebug("routMsgToUser: ", Byte2String(client.AccountID[:]), client.ID)
 	select {
 	case client.userChan <- msg:
 	case <-time.After(5 * time.Second):

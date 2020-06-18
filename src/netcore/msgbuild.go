@@ -3,9 +3,25 @@ package netcore
 import (
 	. "core"
 	. "def"
+	. "message"
 	"mydb"
 	"reflect"
 	"time"
+	. "user"
+)
+
+const (
+	ServerStateNone     int32 = 0
+	ServerStateIdle     int32 = 1
+	ServerStateBuilding int32 = 2
+)
+
+const (
+	ServerErrorNone            int32 = 0
+	ServerErrorIdle            int32 = 1
+	ServerErrorBuilding        int32 = 2
+	ServerErrorNoServerUseable int32 = 100
+	ServerErrorChanError       int32 = 200
 )
 
 func (this *MsgBuild) Process(p interface{}) {
@@ -27,7 +43,7 @@ func (this *MsgBuild) query(user *User) {
 		LogError("query error. ", err)
 		return
 	}
-	this.Num = byte(len(rows))
+	this.Num = uint16(len(rows))
 	var totalData []byte = []byte{}
 	for _, v := range rows {
 		project := &Project{}
@@ -50,9 +66,19 @@ func (this *MsgBuild) build(user *User) {
 	Byte2Struct(reflect.ValueOf(project), this.PData)
 
 	//0 未启动 2 使用中
-	rows, err := mydb.DBMgr.PreQuery("select name, projectName, host, member, serverState, svn from t_project where id = ? and serverState = ?",
-		project.ID, 1)
+	rows, err := mydb.DBMgr.PreQuery("select id from t_project where host = ? and serverState = ?",
+		Byte2String(project.Host[:]), ServerStateBuilding)
+	if err != nil || len(rows) != 0 {
+		LogError("another server is building. ", err)
+		this.sendBack(user, project, ServerErrorBuilding)
+		return
+	}
+
+	//0 未启动 2 使用中
+	rows, err = mydb.DBMgr.PreQuery("select name, projectName, host, account, member, serverState, svn from t_project where id = ? and serverState = ?",
+		project.ID, ServerStateIdle)
 	if err != nil || len(rows) == 0 {
+		this.sendBack(user, project, ServerErrorNoServerUseable)
 		LogError("no server stand by. ", err)
 		return
 	}
@@ -62,11 +88,11 @@ func (this *MsgBuild) build(user *User) {
 		CopyArray(reflect.ValueOf(&project.Name), []byte(v.GetString("name")))
 		CopyArray(reflect.ValueOf(&project.ProjectName), []byte(v.GetString("projectName")))
 		CopyArray(reflect.ValueOf(&project.Host), []byte(v.GetString("host")))
+		CopyArray(reflect.ValueOf(&project.Account), []byte(v.GetString("account")))
 		CopyArray(reflect.ValueOf(&project.Member), []byte(v.GetString("member")))
-		project.ServerState = v.GetInt32("serverState")
 		CopyArray(reflect.ValueOf(&project.SVN), []byte(v.GetString("svn")))
+		project.ServerState = v.GetInt32("serverState")
 
-		LogDebug("准备发送数据到编译服务器", v.GetString("name"), v.GetString("member"), v.GetString("svn"))
 		data, _ := Struct2Bytes(reflect.ValueOf(project))
 		totalData = append(totalData, data...)
 		break
@@ -81,9 +107,23 @@ func (this *MsgBuild) build(user *User) {
 
 	select {
 	case ch <- msgSend:
+		this.sendBack(user, project, ServerErrorIdle)
+		LogInfo("1. 发送消息到编译服务器(成功)")
 	case <-time.After(5 * time.Second):
+		this.sendBack(user, project, ServerErrorChanError)
 		LogError("Request server to build. put user channel failed:", CMD_SYSTEM_SERVER_BUILD)
 	}
+}
+
+func (this *MsgBuild) sendBack(u *User, project *Project, state int32) {
+	msgBuildInfo := &MsgBuildInfo{}
+	msgBuildInfo.ID = project.ID
+	msgBuildInfo.Host = project.Host
+	msgBuildInfo.Name = project.Name
+	msgBuildInfo.ProjectName = project.ProjectName
+	msgBuildInfo.ServerState = state
+
+	u.Sender.Send(msgBuildInfo)
 }
 
 func (this *MsgBuildInfo) Process(p interface{}) {

@@ -1,4 +1,4 @@
-package netcore
+package user
 
 import (
 	. "core"
@@ -75,7 +75,6 @@ func (user *User) processInnerMessage(msg *Command) {
 	case CMD_SYSTEM_USER_LOGIN:
 		user.userLogin(msg)
 	case CMD_BIND_SERVER:
-		LogInfo("Target is server.", user.ID)
 		user.IsServer = true
 	case CMD_SYSTEM_USER_OFFLINE:
 		user.userOffline(msg)
@@ -88,7 +87,7 @@ func (user *User) build(msg *Command) {
 	if user.Status == USER_STATUS_OFFLINE {
 		return
 	}
-	user.Sender.Send(msg.OtherInfo.(*MsgBuild))
+	user.Sender.Send(msg.OtherInfo.(NetMsg))
 }
 
 func (user *User) userLogin(msg *Command) {

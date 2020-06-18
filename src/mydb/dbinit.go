@@ -13,15 +13,15 @@ const initSql string = `CREATE TABLE [t_project] (
   [name] VARCHAR(255) NOT NULL,
   [projectName] VARCHAR(255) NOT NULL,
   [host] VARCHAR(255) NOT NULL,
+  [account] VARCHAR(255) NOT NULL,
   [svn] VARCHAR(255) NOT NULL,
   [member] VARCHAR(255) NOT NULL,
   [serverState] INTEGER DEFAULT 0);
-  insert into t_project (id, name, projectName, host, svn, member) values (1000, 'test', 'test', 'test', 'test', 'test');`
+  insert into t_project (id, name, projectName, host, account, svn, member) values (1000, 'test', 'projectName', 'host', 'account', 'svn', 'member');`
 
 var DBMgr DataBaseMgr
 
 func CreateDBMgr(path string) bool {
-	LogInfo("db path:", path)
 	dbExist := CreateDB(path)
 
 	db, err := SQL.Open("sqlite3", path)
@@ -76,15 +76,19 @@ func initSQL() bool {
 
 	var errSQL error
 	var errorlog string = "SQL init error: "
+	var hasError bool
 	for _, line := range lineArray {
 		if strings.TrimSpace(line) == "" {
 			continue
 		}
 		_, errSQL = DBMgr.Execute(line)
 		if errSQL != nil {
+			hasError = true
 			errorlog += line
 		}
 	}
-	LogError(errorlog)
+	if hasError {
+		LogError(errorlog)
+	}
 	return true
 }

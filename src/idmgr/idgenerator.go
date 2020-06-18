@@ -29,7 +29,7 @@ func InitGenerator() {
 func generateID(idMax ObjectID, ch chan ObjectID) {
 	for {
 		ch <- idMax
-		LogInfo("写入ID", idMax)
+		//LogInfo("写入ID", idMax)
 		idMax++
 	}
 }
@@ -46,12 +46,12 @@ func (this *IDGenerator) create() bool {
 		go generateID(ObjectID(idMax+1), this.IDChanSet[ID_SERVER])
 		return false
 	}
-	LogDebug("row count = ", len(rows))
+
 	for _, row := range rows {
 		idMax := row.GetObjectID("maxid")
 		this.IDChanSet[ID_SERVER] = make(chan ObjectID, 1)
 		go generateID(ObjectID(idMax+1), this.IDChanSet[ID_SERVER])
-		LogInfo("创建ID", idMax+1)
+		//LogInfo("创建ID", idMax+1)
 	}
 	return true
 }

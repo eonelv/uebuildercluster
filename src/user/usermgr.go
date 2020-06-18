@@ -1,4 +1,4 @@
-package netcore
+package user
 
 import (
 	. "core"
@@ -50,6 +50,9 @@ func (this *UserManager) processUserLogin(msg *Command) {
 
 	oldUser, exist := this.users[id]
 
+	if exist && !oldUser.IsServer && oldUser.Status == USER_STATUS_OFFLINE {
+		exist = false
+	}
 	if !exist {
 		oldUser = CreateUser(id)
 	}
