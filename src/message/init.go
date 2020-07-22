@@ -11,4 +11,6 @@ func init() {
 	registerNetMsgRegisterServer()
 	registerNetMsgBindServer()
 	registerNetMsgProject()
+	registerNetMsgTick()
+	registerNetMsgNetReport()
 }

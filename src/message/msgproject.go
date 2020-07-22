@@ -40,6 +40,7 @@ type Project struct {
 	Host        [255]byte
 	Account     [255]byte
 	Member      [255]byte
+	BuildStep   [1024]byte
 	SVN         [255]byte
 	ServerState int32
 }
@@ -66,7 +67,7 @@ func (this *MsgProject) Process(p interface{}) {
 }
 
 func (this *MsgProject) query(user *User) {
-	sql := "select id, name, projectName, host, account, member, svn, serverState from t_project where id > 1000"
+	sql := "select id, name, projectName, host, account, member, buildstep, svn, serverState from t_project where id > 1000"
 	rows, err := mydb.DBMgr.PreQuery(sql)
 	if err != nil {
 		LogError("query error. ", err)
@@ -82,6 +83,7 @@ func (this *MsgProject) query(user *User) {
 		CopyArray(reflect.ValueOf(&project.Host), []byte(v.GetString("host")))
 		CopyArray(reflect.ValueOf(&project.Account), []byte(v.GetString("account")))
 		CopyArray(reflect.ValueOf(&project.Member), []byte(v.GetString("member")))
+		CopyArray(reflect.ValueOf(&project.BuildStep), []byte(v.GetString("buildstep")))
 		CopyArray(reflect.ValueOf(&project.SVN), []byte(v.GetString("svn")))
 		project.ServerState = v.GetInt32("serverState")
 

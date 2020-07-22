@@ -38,7 +38,7 @@ func (this *MsgBuild) Process(p interface{}) {
 }
 
 func (this *MsgBuild) query(user *User) {
-	rows, err := mydb.DBMgr.PreQuery("select id, name, projectName, host, member,serverState from t_project where id > 1000")
+	rows, err := mydb.DBMgr.PreQuery("select id, name, projectName, host, member, serverState from t_project where id > 1000")
 	if err != nil {
 		LogError("query error. ", err)
 		return
@@ -127,7 +127,7 @@ func (this *MsgBuild) sendBack(u *User, project *Project, state int32) {
 }
 
 func (this *MsgBuildInfo) Process(p interface{}) {
-	_, err := mydb.DBMgr.PreExecute("update t_project set serverState=? where id=?", this.ServerState, this.ID)
+	_, err := mydb.DBMgr.PreExecute("update t_project set serverState=?, buildstep=? where id=?", this.ServerState, "", this.ID)
 	LogDebug("Update server state to:", this.ServerState)
 	if err != nil {
 		LogError("Update serverState Error:", err)
