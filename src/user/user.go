@@ -116,7 +116,7 @@ func (user *User) userOffline(msg *Command) {
 		close(user.recvChan)
 		close(user.innerChan)
 	} else {
-		_, err := mydb.DBMgr.PreExecute("update t_project set serverState=0 where id=?", user.ID)
+		_, err := mydb.DBMgr.PreExecute("update t_project set serverState=0, buildstep='' where id=?", user.ID)
 		if err != nil {
 			LogError("Reset Server State Error:", err)
 			return
