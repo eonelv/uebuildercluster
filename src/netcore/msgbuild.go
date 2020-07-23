@@ -17,11 +17,14 @@ const (
 )
 
 const (
-	ServerErrorNone            int32 = 0
-	ServerErrorIdle            int32 = 1
-	ServerErrorBuilding        int32 = 2
-	ServerErrorNoServerUseable int32 = 100
-	ServerErrorChanError       int32 = 200
+	ServerErrorNone  int32 = 0
+	ServerErrorBegin int32 = 2
+
+	ServerErrorBuilding        int32 = 100
+	ServerErrorOtherBuilding   int32 = 200
+	ServerErrorNoServerUseable int32 = 300
+	ServerErrorChanError       int32 = 400
+	ServerErrorDB              int32 = 500
 )
 
 func (this *MsgBuild) Process(p interface{}) {
@@ -62,6 +65,7 @@ func (this *MsgBuild) query(user *User) {
 }
 
 func (this *MsgBuild) build(user *User) {
+	LogDebug("开始编译")
 	project := &Project{}
 	Byte2Struct(reflect.ValueOf(project), this.PData)
 
@@ -69,8 +73,18 @@ func (this *MsgBuild) build(user *User) {
 	rows, err := mydb.DBMgr.PreQuery("select id from t_project where host = ? and serverState = ?",
 		Byte2String(project.Host[:]), ServerStateBuilding)
 	if err != nil || len(rows) != 0 {
-		LogError("another server is building. ", err)
-		this.sendBack(user, project, ServerErrorBuilding)
+		if len(rows) != 0 {
+			if rows[0].GetObjectID("id") == project.ID {
+				LogError("server is building. ", err)
+				this.sendBack(user, project, ServerErrorBuilding)
+			} else {
+				LogError("another server is building. ", err)
+				this.sendBack(user, project, ServerErrorOtherBuilding)
+			}
+		} else {
+			LogError("another server is building. ", err)
+			this.sendBack(user, project, ServerErrorDB)
+		}
 		return
 	}
 
@@ -107,8 +121,8 @@ func (this *MsgBuild) build(user *User) {
 
 	select {
 	case ch <- msgSend:
-		this.sendBack(user, project, ServerErrorIdle)
-		LogInfo("1. 发送消息到编译服务器(成功)")
+		//this.sendBack(user, project, ServerErrorIdle)
+		LogDebug("1. 发送消息到编译服务器(成功)")
 	case <-time.After(5 * time.Second):
 		this.sendBack(user, project, ServerErrorChanError)
 		LogError("Request server to build. put user channel failed:", CMD_SYSTEM_SERVER_BUILD)
@@ -118,6 +132,7 @@ func (this *MsgBuild) build(user *User) {
 func (this *MsgBuild) sendBack(u *User, project *Project, state int32) {
 	msgBuildInfo := &MsgBuildInfo{}
 	msgBuildInfo.ID = project.ID
+	msgBuildInfo.UserID = this.UserID
 	msgBuildInfo.Host = project.Host
 	msgBuildInfo.Name = project.Name
 	msgBuildInfo.ProjectName = project.ProjectName
@@ -127,7 +142,15 @@ func (this *MsgBuild) sendBack(u *User, project *Project, state int32) {
 }
 
 func (this *MsgBuildInfo) Process(p interface{}) {
-	_, err := mydb.DBMgr.PreExecute("update t_project set serverState=?, buildstep=? where id=?", this.ServerState, "", this.ID)
+
+	targetUserCh := GetChanByID(this.UserID)
+	msgSend := &Command{CMD_SYSTEM_SERVER_BUILD, 0, nil, this}
+	err := SendCommand(targetUserCh, msgSend, 10)
+	if err != nil {
+		LogError(err)
+	}
+
+	_, err = mydb.DBMgr.PreExecute("update t_project set serverState=?, buildstep=? where id=?", this.ServerState, "", this.ID)
 	LogDebug("Update server state to:", this.ServerState)
 	if err != nil {
 		LogError("Update serverState Error:", err)

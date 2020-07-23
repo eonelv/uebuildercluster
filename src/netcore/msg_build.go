@@ -39,6 +39,7 @@ const (
 )
 
 type MsgBuild struct {
+	UserID         ObjectID
 	Action         uint16
 	IsPatch        bool     ""
 	IsBuildApp     bool     "是否编译App"
@@ -51,6 +52,7 @@ type MsgBuild struct {
 
 type MsgBuildInfo struct {
 	ID          ObjectID
+	UserID      ObjectID
 	Name        [255]byte
 	ProjectName [255]byte
 	Host        [255]byte
