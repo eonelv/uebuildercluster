@@ -65,7 +65,6 @@ func (this *MsgBuild) query(user *User) {
 }
 
 func (this *MsgBuild) build(user *User) {
-	LogDebug("开始编译")
 	project := &Project{}
 	Byte2Struct(reflect.ValueOf(project), this.PData)
 
