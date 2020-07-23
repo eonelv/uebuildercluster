@@ -141,15 +141,18 @@ func (this *MsgBuild) sendBack(u *User, project *Project, state int32) {
 }
 
 func (this *MsgBuildInfo) Process(p interface{}) {
+	//单独发给发起者
+	// targetUserCh := GetChanByID(this.UserID)
+	// msgSend := &Command{CMD_SYSTEM_SERVER_BUILD, 0, nil, this}
+	// err := SendCommand(targetUserCh, msgSend, 10)
+	// if err != nil {
+	// 	LogError(err)
+	// }
 
-	targetUserCh := GetChanByID(this.UserID)
-	msgSend := &Command{CMD_SYSTEM_SERVER_BUILD, 0, nil, this}
-	err := SendCommand(targetUserCh, msgSend, 10)
-	if err != nil {
-		LogError(err)
-	}
+	//广播给所有人
+	UserMgr.BroadcastMessage(this)
 
-	_, err = mydb.DBMgr.PreExecute("update t_project set serverState=?, buildstep=? where id=?", this.ServerState, "", this.ID)
+	_, err := mydb.DBMgr.PreExecute("update t_project set serverState=?, buildstep=? where id=?", this.ServerState, "", this.ID)
 	LogDebug("Update server state to:", this.ServerState)
 	if err != nil {
 		LogError("Update serverState Error:", err)

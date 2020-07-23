@@ -88,7 +88,7 @@ func (this *UserManager) processBroadCast(msg NetMsg) {
 			continue
 		}
 		u.Sender.Send(msg)
-		LogError("BroadcastMessage to User,", u.ID, u.Status)
+		//LogDebug("BroadcastMessage to User,", u.ID, u.Status)
 	}
 }
 
