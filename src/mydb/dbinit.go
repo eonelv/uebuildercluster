@@ -17,8 +17,9 @@ const initSql string = `CREATE TABLE [t_project] (
   [svn] VARCHAR(255) NOT NULL,
   [member] VARCHAR(255) NOT NULL,
   [buildstep] VARCHAR(1024),
+  [desc] VARCHAR(1024),
   [serverState] INTEGER DEFAULT 0);
-  insert into t_project (id, name, projectName, host, account, svn, member, buildstep) values (1000, 'test', 'projectName', 'host', 'account', 'svn', 'member', 'buildstep');`
+  insert into t_project (id, name, projectName, host, account, svn, member, buildstep, desc) values (1000, 'test', 'projectName', 'host', 'account', 'svn', 'member', 'buildstep', 'desc');`
 
 var DBMgr DataBaseMgr
 

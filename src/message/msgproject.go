@@ -25,6 +25,7 @@ func createNetMsgProject(cmdData *Command) NetMsg {
 
 const (
 	QUERY_PROJECT uint16 = 1
+	SAVE_PROJECT  uint16 = 2
 )
 
 type MsgProject struct {
@@ -42,6 +43,7 @@ type Project struct {
 	Member      [255]byte
 	BuildStep   [1024]byte
 	SVN         [255]byte
+	Desc        [1024]byte
 	ServerState int32
 }
 
@@ -63,11 +65,14 @@ func (this *MsgProject) Process(p interface{}) {
 	case QUERY_PROJECT:
 		this.query(puser)
 		break
+	case SAVE_PROJECT:
+		this.save(puser)
+		break
 	}
 }
 
 func (this *MsgProject) query(user *User) {
-	sql := "select id, name, projectName, host, account, member, buildstep, svn, serverState from t_project where id > 1000"
+	sql := "select id, name, projectName, host, account, member, buildstep, svn, desc, serverState from t_project where id > 1000"
 	rows, err := mydb.DBMgr.PreQuery(sql)
 	if err != nil {
 		LogError("query error. ", err)
@@ -85,6 +90,7 @@ func (this *MsgProject) query(user *User) {
 		CopyArray(reflect.ValueOf(&project.Member), []byte(v.GetString("member")))
 		CopyArray(reflect.ValueOf(&project.BuildStep), []byte(v.GetString("buildstep")))
 		CopyArray(reflect.ValueOf(&project.SVN), []byte(v.GetString("svn")))
+		CopyArray(reflect.ValueOf(&project.Desc), []byte(v.GetString("desc")))
 		project.ServerState = v.GetInt32("serverState")
 
 		data, _ := Struct2Bytes(reflect.ValueOf(project))
@@ -92,4 +98,17 @@ func (this *MsgProject) query(user *User) {
 	}
 	this.PData = totalData
 	user.Sender.Send(this)
+}
+
+func (this *MsgProject) save(user *User) {
+	project := &Project{}
+	Byte2Struct(reflect.ValueOf(project), this.PData)
+	_, err := mydb.DBMgr.PreExecute("update t_project set member=?, desc=? where id=?",
+		Byte2String(project.Member[:]), Byte2String(project.Desc[:]), project.ID)
+	if err != nil {
+		LogError("Save Project Error:", err)
+		return
+	}
+
+	//user.Sender.Send(this)
 }
