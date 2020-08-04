@@ -80,7 +80,16 @@ func (user *User) processInnerMessage(msg *Command) {
 		user.userOffline(msg)
 	case CMD_SYSTEM_SERVER_BUILD:
 		user.build(msg)
+	default:
+		user.sendMsgToOther(msg)
 	}
+}
+
+func (user *User) sendMsgToOther(msg *Command) {
+	if user.Status == USER_STATUS_OFFLINE {
+		return
+	}
+	user.Sender.Send(msg.OtherInfo.(NetMsg))
 }
 
 func (user *User) build(msg *Command) {
