@@ -99,7 +99,7 @@ func (client *TCPUserConn) processLogin(header *PackHeader, datas []byte) {
 		msgConnection := &MsgConnection{}
 		msgConnection.CreateByBytes(datas)
 		client.Sender.Send(msgConnection)
-		//LogDebug("MsgConnect成功...")
+		//LogDebug("MsgConnect成功...", msgConnection.ID, msgConnection.AccountID)
 		return
 	}
 	if header.Cmd == CMD_REGISTER_SERVER {
