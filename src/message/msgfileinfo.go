@@ -30,6 +30,7 @@ const (
 
 type MsgFileInfo struct {
 	IsDir    bool
+	Size     int64
 	FileName [1024]byte
 }
 
