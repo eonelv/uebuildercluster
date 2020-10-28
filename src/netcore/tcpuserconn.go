@@ -171,13 +171,18 @@ func (client *TCPUserConn) routMsgToUser(header *PackHeader, data []byte) bool {
 func (client *TCPUserConn) close() {
 	client.Conn.Close()
 	client.Sender.Close()
-	close(client.dataChan)
+	if client.dataChan != nil {
+		close(client.dataChan)
+	}
 
 	if !client._isLogin {
 		return
 	}
 
 	userInnerChan := GetChanByID(client.ID)
+	if userInnerChan == nil {
+		return
+	}
 	closeMsg := &Command{CMD_SYSTEM_USER_OFFLINE, nil, client.dataChan, nil}
 	client._isLogin = false
 
@@ -188,6 +193,10 @@ func (client *TCPUserConn) close() {
 		return
 	}
 	return
+}
+
+func (client *TCPUserConn) Close() {
+	client.close()
 }
 
 func (this *TCPUserConn) getID() ObjectID {

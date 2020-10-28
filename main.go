@@ -15,6 +15,7 @@ import (
 	"reflect"
 	"runtime"
 	"time"
+	. "unrealeditor"
 	. "user"
 )
 
@@ -22,6 +23,7 @@ const dbName string = "data.db"
 const port int32 = 5006
 
 func main() {
+	go StartUnrealEditorAuth()
 	Start()
 }
 
