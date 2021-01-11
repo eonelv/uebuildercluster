@@ -1,13 +1,14 @@
 package netcore
 
 import (
-	. "core"
 	. "def"
 	. "message"
 	"mydb"
 	"reflect"
 	"time"
 	. "user"
+
+	. "ngcod.com/core"
 )
 
 const (
@@ -104,6 +105,7 @@ func (this *MsgBuild) build(user *User) {
 		CopyArray(reflect.ValueOf(&project.Account), []byte(v.GetString("account")))
 		CopyArray(reflect.ValueOf(&project.Member), []byte(v.GetString("member")))
 		CopyArray(reflect.ValueOf(&project.SVN), []byte(v.GetString("svn")))
+		LogDebug("SVN:", v.GetString("svn"))
 		project.ServerState = v.GetInt32("serverState")
 
 		data, _ := Struct2Bytes(reflect.ValueOf(project))

@@ -2,11 +2,12 @@
 package message
 
 import (
-	. "core"
 	. "def"
 	"mydb"
 	"reflect"
 	"user"
+
+	. "ngcod.com/core"
 )
 
 func registerNetMsgNetReport() {

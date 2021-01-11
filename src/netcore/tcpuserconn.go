@@ -2,7 +2,6 @@
 package netcore
 
 import (
-	. "core"
 	. "def"
 	. "idmgr"
 	"io"
@@ -10,6 +9,8 @@ import (
 	"net"
 	"reflect"
 	"time"
+
+	. "ngcod.com/core"
 )
 
 type TCPHandler interface {

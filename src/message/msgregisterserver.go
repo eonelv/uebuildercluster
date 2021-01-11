@@ -1,13 +1,14 @@
 package message
 
 import (
-	. "core"
 	. "def"
 	. "idmgr"
 	"mydb"
 	"reflect"
 	"strings"
 	"time"
+
+	. "ngcod.com/core"
 )
 
 type MsgServerRegister struct {

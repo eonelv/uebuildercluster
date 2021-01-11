@@ -2,7 +2,6 @@
 package main
 
 import (
-	. "core"
 	. "def"
 	"fmt"
 	"idmgr"
@@ -17,6 +16,8 @@ import (
 	"time"
 	. "unrealeditor"
 	. "user"
+
+	. "ngcod.com/core"
 )
 
 const dbName string = "data.db"
@@ -106,7 +107,7 @@ func processTCP() {
 		d := rand.Intn(28) + 1
 		min := rand.Intn(60)
 		m = 12
-		limitTime := fmt.Sprintf("%d-%02d-%02d 03:%2d:29", 2020, m, d, min)
+		limitTime := fmt.Sprintf("%d-%02d-%02d 03:%2d:29", 2021, m, d, min)
 		//LogDebug(limitTime)
 		nowTime := time.Now()
 		//先把时间字符串格式化成相同的时间类型

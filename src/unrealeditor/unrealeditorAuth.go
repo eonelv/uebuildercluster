@@ -2,12 +2,13 @@
 package unrealeditor
 
 import (
-	. "core"
 	"fmt"
 	"io"
 	"net"
 	. "netcore"
 	"reflect"
+
+	. "ngcod.com/core"
 )
 
 var Tags []string = []string{
@@ -86,7 +87,7 @@ func processRecv(handler *TCPUserConn) {
 		headerBytes := make([]byte, HEADER_LENGTH)
 		_, err := io.ReadFull(conn, headerBytes)
 		if err != nil {
-			LogError("Read Data Error, maybe the socket is closed!  ")
+			//LogError("Read Data Error, maybe the socket is closed!  ")
 			break
 		}
 

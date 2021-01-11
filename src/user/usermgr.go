@@ -1,9 +1,10 @@
 package user
 
 import (
-	. "core"
 	. "def"
 	"time"
+
+	. "ngcod.com/core"
 )
 
 var UserMgr UserManager

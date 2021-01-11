@@ -2,10 +2,11 @@
 package message
 
 import (
-	. "core"
 	. "def"
 	"reflect"
 	"user"
+
+	. "ngcod.com/core"
 )
 
 func registerNetMsgFileInfo() {

@@ -2,11 +2,12 @@
 package message
 
 import (
-	. "core"
 	. "def"
 	"mydb"
 	"reflect"
 	"time"
+
+	. "ngcod.com/core"
 )
 
 type MsgBindServer struct {

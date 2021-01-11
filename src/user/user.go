@@ -1,9 +1,10 @@
 package user
 
 import (
-	. "core"
 	. "def"
 	"mydb"
+
+	. "ngcod.com/core"
 )
 
 const (

@@ -1,10 +1,11 @@
 package idmgr
 
 import (
-	. "core"
 	. "mydb"
 	"sync"
 	"time"
+
+	. "ngcod.com/core"
 )
 
 const (

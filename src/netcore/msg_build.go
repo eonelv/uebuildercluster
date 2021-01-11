@@ -2,9 +2,10 @@
 package netcore
 
 import (
-	. "core"
 	. "def"
 	"reflect"
+
+	. "ngcod.com/core"
 )
 
 func registerNetMsgBuild() {

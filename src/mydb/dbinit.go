@@ -1,11 +1,13 @@
 package mydb
 
 import (
-	. "core"
 	SQL "database/sql"
-	. "db/sqlitedb"
 	"os"
 	"strings"
+
+	. "ngcod.com/db/sqlitedb"
+
+	. "ngcod.com/core"
 )
 
 const initSql string = `CREATE TABLE [t_project] (
