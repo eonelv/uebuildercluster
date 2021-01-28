@@ -14,4 +14,5 @@ func init() {
 	registerNetMsgTick()
 	registerNetMsgNetReport()
 	registerNetMsgFileInfo()
+	registerNetMsgUnRegister()
 }
