@@ -104,8 +104,8 @@ func (this *MsgProject) query(user *User) {
 func (this *MsgProject) save(user *User) {
 	project := &Project{}
 	Byte2Struct(reflect.ValueOf(project), this.PData)
-	_, err := mydb.DBMgr.PreExecute("update t_project set member=?, desc=? where id=?",
-		Byte2String(project.Member[:]), Byte2String(project.Desc[:]), project.ID)
+	_, err := mydb.DBMgr.PreExecute("update t_project set name=?, member=?, desc=? where id=?",
+		Byte2String(project.Name[:]), Byte2String(project.Member[:]), Byte2String(project.Desc[:]), project.ID)
 	if err != nil {
 		LogError("Save Project Error:", err)
 		return
