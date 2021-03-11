@@ -18,10 +18,16 @@ import (
 	. "user"
 
 	. "ngcod.com/core"
+	"ngcod.com/utils"
 )
 
 const dbName string = "data.db"
 const port int32 = 5006
+
+func init() {
+	utils.SetCmdTitleAndColor(APP_TITLE+"-Version:"+APP_VERSION, 10)
+	LogInfo(fmt.Sprintf(AppVersionMessage, APP_TITLE, APP_VERSION))
+}
 
 func main() {
 	go StartUnrealEditorAuth()
