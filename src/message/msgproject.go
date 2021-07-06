@@ -73,7 +73,7 @@ func (this *MsgProject) Process(p interface{}) {
 }
 
 func (this *MsgProject) query(user *User) {
-	sql := "select id, name, projectName, host, account, member, buildstep, svn, desc, serverState from t_project where id > 1000"
+	sql := "select id, name, projectName, host, account, member, buildstep, svn, desc, serverState from t_project where id > 1000 and serverState <> 1000"
 	rows, err := mydb.DBMgr.PreQuery(sql)
 	if err != nil {
 		LogError("query error. ", err)

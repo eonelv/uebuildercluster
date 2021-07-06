@@ -13,9 +13,16 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"sync"
 	"time"
 	. "unrealeditor"
 	. "user"
+
+	"cfg"
+
+	"os/exec"
+
+	"syscall"
 
 	. "ngcod.com/core"
 	"ngcod.com/utils"
@@ -24,12 +31,17 @@ import (
 const dbName string = "data.db"
 const port int32 = 5006
 
+var config cfg.Config
+
+var mutexConfig sync.RWMutex
+
 func init() {
 	utils.SetCmdTitleAndColor(APP_TITLE+"-Version:"+APP_VERSION, 10)
 	LogInfo(fmt.Sprintf(AppVersionMessage, APP_TITLE, APP_VERSION))
 }
 
 func main() {
+	mutexConfig = sync.RWMutex{}
 	go StartUnrealEditorAuth()
 	Start()
 }
@@ -50,6 +62,10 @@ func Start() {
 		LogError("Connect dataBase error")
 		os.Exit(101)
 	}
+
+	config = cfg.Config{}
+	config.ReadConfig()
+
 	mydb.DBMgr.Execute("select * from t_project")
 
 	idmgr.InitGenerator()
@@ -66,7 +82,7 @@ func Start() {
 	go processTCP()
 
 	var timer *Timer = NewTimer()
-	timer.Start(1000)
+	timer.Start(10 * 1000)
 
 	//Test()
 	for {
@@ -74,12 +90,12 @@ func Start() {
 		case msg := <-sysChan:
 			LogInfo("system command :", msg.Cmd)
 			if msg.Cmd == CMD_SYSTEM_MAIN_CLOSE {
+				timer.Stop()
 				return
 			}
 		case <-timer.GetChannel():
-			//			message := &message.MsgMessage{}
-			//			message.Message = []byte("hello world!")
-			//			user.UserMgr.BroadcastMessage(message)
+			startOtherProcess2()
+			break
 		}
 	}
 }
@@ -141,4 +157,77 @@ func processConnect(conn *net.TCPConn) {
 	client.Sender = CreateTCPSender(conn)
 
 	go ProcessRecv(client, false)
+}
+
+func startOtherProcess() {
+	for k, v := range config.Datas {
+		//查找是否有对应名字的进程
+		isOK, _ := utils.FindProcessByName2(v.Path, v.ActProcessName)
+
+		if isOK {
+			continue
+		}
+		config.ActiveDatas[k] = nil
+
+		//启动进程
+		binary, lookErr := exec.LookPath(v.Path + v.ProcessName)
+		if lookErr != nil {
+			LogError("Can't Find the exe path", lookErr)
+			continue
+		}
+
+		args := []string{}
+		env := os.Environ()
+		procAttr := &os.ProcAttr{
+			Env: env,
+			Files: []*os.File{
+				os.Stdin,
+				os.Stdout,
+				os.Stderr,
+			},
+			Sys: &syscall.SysProcAttr{},
+		}
+		procAttr.Sys.HideWindow = false
+
+		p, err := os.StartProcess(binary, args, procAttr)
+		if err != nil {
+			LogError("StartProcess error", err, p)
+			continue
+		}
+
+		ActiveData := &cfg.ProcessActiveData{}
+		ActiveData.ParentPID = p.Pid
+		ActiveData.PID = 0
+		config.ActiveDatas[k] = ActiveData
+		LogDebug("启动进程", v, v.ProcessName, p)
+	}
+}
+
+func startOtherProcess2() {
+	for k, v := range config.Datas {
+		//查找是否有对应名字的进程
+		isOK, _ := utils.FindProcessByName2(v.Path, v.ActProcessName)
+
+		if isOK {
+			continue
+		}
+		isOK, _ = utils.FindProcessByName2(v.Path, v.ProcessName)
+
+		if isOK {
+			continue
+		}
+		config.ActiveDatas[k] = nil
+
+		if v.NewWindow {
+			utils.Exec("cmd.exe", "/C", "start", v.Path+v.ProcessName)
+		} else {
+			utils.Exec(v.Path + v.ProcessName)
+		}
+
+		ActiveData := &cfg.ProcessActiveData{}
+		ActiveData.ParentPID = 0
+		ActiveData.PID = 0
+		config.ActiveDatas[k] = ActiveData
+		LogDebug("启动进程", v, v.ProcessName)
+	}
 }
