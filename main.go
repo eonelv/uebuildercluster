@@ -219,9 +219,9 @@ func startOtherProcess2() {
 		config.ActiveDatas[k] = nil
 
 		if v.NewWindow {
-			utils.Exec("cmd.exe", "/C", "start", v.Path+v.ProcessName)
+			utils.ExecByCharset(v.CharSet, "cmd.exe", "/C", "start", v.Path+v.ProcessName)
 		} else {
-			utils.Exec(v.Path + v.ProcessName)
+			utils.ExecByCharset(v.CharSet, v.Path+v.ProcessName)
 		}
 
 		ActiveData := &cfg.ProcessActiveData{}

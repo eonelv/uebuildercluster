@@ -1,4 +1,4 @@
 {
 	"uebuildtoolart":{"path":"E:/uebuilderhome/uebuilder/", "process":"UEBuilderTool.exe", "process2":"uebuildtool.exe"},
-	"versiongen":{"path":"E:/golang/versiongen/", "process":"start.cmd", "process2":"versiongen.exe", "newWindow":true}
+	"versiongen":{"path":"E:/golang/versiongen/", "process":"start.cmd", "process2":"versiongen.exe", "newWindow":true,"charset":"GBK"}
 }

@@ -20,6 +20,7 @@ type TConfigData struct {
 	Path           string //启动程序路徑
 	ProcessName    string //原始進程名
 	ActProcessName string //需要检查的进程名
+	CharSet        string
 	NewWindow      bool
 }
 
@@ -59,6 +60,7 @@ func (this *Config) ReadConfig() error {
 	this.Datas = make(map[string]TConfigData)
 	for k, _ := range ConfigDatas {
 		configData := TConfigData{}
+		configData.CharSet = "GBK"
 		configData.Path = utils.GetTableString(ConfigDatas, k, "path")
 		configData.ProcessName = utils.GetTableString(ConfigDatas, k, "process")
 		configData.ActProcessName = utils.GetTableString(ConfigDatas, k, "process2")
